@@ -2,11 +2,10 @@
 
 A small weather app for Indian cities, written in plain HTML, CSS and JavaScript. It reads live data from the Open-Meteo API with the Fetch API. Open-Meteo is free and needs no API key.
 
-Version 1 loads the current temperature and wind speed for the selected city and prints them as text.
-
 ## Features
 
 - City picker with Kolkata, Howrah, Delhi, Mumbai, Chennai, Bengaluru, Hyderabad, Pune, Ahmedabad, Jaipur, Lucknow and Guwahati
+- Current temperature, feels-like temperature, humidity and wind speed, with a weather icon and description
 
 ## Project structure
 

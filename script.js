@@ -17,6 +17,19 @@ const CITIES = [
   { name: "Guwahati", state: "Assam", lat: 26.1445, lon: 91.7362 },
 ];
 
+// WMO weather codes used by Open-Meteo, grouped by range.
+function describeCode(code) {
+  if (code === 0) return { label: "Clear sky", icon: "☀️" };
+  if (code <= 2) return { label: "Partly cloudy", icon: "⛅" };
+  if (code === 3) return { label: "Overcast", icon: "☁️" };
+  if (code <= 48) return { label: "Fog", icon: "🌫️" };
+  if (code <= 57) return { label: "Drizzle", icon: "🌦️" };
+  if (code <= 67) return { label: "Rain", icon: "🌧️" };
+  if (code <= 77) return { label: "Snow", icon: "❄️" };
+  if (code <= 82) return { label: "Rain showers", icon: "🌧️" };
+  return { label: "Thunderstorm", icon: "⛈️" };
+}
+
 const citySelect = document.getElementById("city-select");
 const weatherEl = document.getElementById("weather");
 
@@ -32,7 +45,22 @@ function buildUrl(city) {
 
 function render(city, data) {
   const now = data.current;
-  weatherEl.textContent = `${city.name}: ${now.temperature_2m}°C, wind ${now.wind_speed_10m} km/h`;
+  const info = describeCode(now.weather_code);
+
+  weatherEl.innerHTML = `
+    <div class="current">
+      <div class="icon">${info.icon}</div>
+      <div>
+        <h2>${city.name}, <span>${city.state}</span></h2>
+        <p class="condition">${info.label}</p>
+      </div>
+      <p class="temp">${Math.round(now.temperature_2m)}°C</p>
+    </div>
+    <ul class="stats">
+      <li><span>Feels like</span><strong>${Math.round(now.apparent_temperature)}°C</strong></li>
+      <li><span>Humidity</span><strong>${now.relative_humidity_2m}%</strong></li>
+      <li><span>Wind</span><strong>${Math.round(now.wind_speed_10m)} km/h</strong></li>
+    </ul>`;
 }
 
 async function loadWeather(city) {

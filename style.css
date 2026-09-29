@@ -166,3 +166,29 @@ select:disabled {
   opacity: 0.6;
 }
 
+.error-box {
+  padding: 16px;
+  text-align: center;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  border-radius: 12px;
+}
+
+.error-box[hidden] {
+  display: none;
+}
+
+.error-box p {
+  margin: 0 0 12px;
+}
+
+.error-box button {
+  padding: 8px 18px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+

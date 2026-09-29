@@ -7,6 +7,8 @@ A small weather app for Indian cities, written in plain HTML, CSS and JavaScript
 - City picker with Kolkata, Howrah, Delhi, Mumbai, Chennai, Bengaluru, Hyderabad, Pune, Ahmedabad, Jaipur, Lucknow and Guwahati
 - Current temperature, feels-like temperature, humidity and wind speed, with a weather icon and description
 - Loading spinner while the request is in flight; the city picker is locked until it finishes
+- Error handling for network failures, non-200 responses, malformed data and an 8 second timeout, with a retry button
+- Late responses from a previously selected city are ignored
 
 ## Project structure
 

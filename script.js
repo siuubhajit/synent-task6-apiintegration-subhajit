@@ -1,6 +1,7 @@
 // Bharat Weather: shows live weather for Indian cities using the Open-Meteo API.
 
 const API_URL = "https://api.open-meteo.com/v1/forecast";
+const REQUEST_TIMEOUT_MS = 8000;
 
 const CITIES = [
   { name: "Kolkata", state: "West Bengal", lat: 22.5726, lon: 88.3639 },
@@ -33,6 +34,10 @@ function describeCode(code) {
 const citySelect = document.getElementById("city-select");
 const weatherEl = document.getElementById("weather");
 const loaderEl = document.getElementById("loader");
+const errorBox = document.getElementById("error-box");
+const errorMessage = document.getElementById("error-message");
+const retryBtn = document.getElementById("retry-btn");
+let latestRequest = 0;
 
 function buildUrl(city) {
   const params = new URLSearchParams({
@@ -70,14 +75,46 @@ function setLoading(isLoading) {
   citySelect.disabled = isLoading;
 }
 
+function showError(message) {
+  errorMessage.textContent = message;
+  errorBox.hidden = false;
+}
+
+function hideError() {
+  errorBox.hidden = true;
+}
+
+function friendlyMessage(err) {
+  if (err.name === "AbortError") return "The weather service took too long to respond.";
+  if (!navigator.onLine) return "You seem to be offline. Check your connection and retry.";
+  if (err.message.startsWith("HTTP")) return `The weather service returned an error (${err.message}).`;
+  return "Could not load the weather right now.";
+}
+
 async function loadWeather(city) {
+  const requestId = ++latestRequest;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  hideError();
   setLoading(true);
+
   try {
-    const response = await fetch(buildUrl(city));
+    const response = await fetch(buildUrl(city), { signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if (!data.current) throw new Error("Missing weather data");
+
+    // Ignore the result if the user has already picked another city.
+    if (requestId !== latestRequest) return;
     render(city, data);
+  } catch (err) {
+    if (requestId !== latestRequest) return;
+    weatherEl.innerHTML = "";
+    showError(friendlyMessage(err));
   } finally {
-    setLoading(false);
+    clearTimeout(timer);
+    if (requestId === latestRequest) setLoading(false);
   }
 }
 
@@ -89,6 +126,7 @@ function init() {
   citySelect.addEventListener("change", () => {
     loadWeather(CITIES[citySelect.value]);
   });
+  retryBtn.addEventListener("click", () => loadWeather(CITIES[citySelect.value]));
 
   loadWeather(CITIES[citySelect.value]);
 }

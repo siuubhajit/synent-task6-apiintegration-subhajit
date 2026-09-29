@@ -9,6 +9,8 @@ A small weather app for Indian cities, written in plain HTML, CSS and JavaScript
 - Loading spinner while the request is in flight; the city picker is locked until it finishes
 - Error handling for network failures, non-200 responses, malformed data and an 8 second timeout, with a retry button
 - Late responses from a previously selected city are ignored
+- 5-day forecast with daily high, low and conditions
+- The last selected city is remembered in localStorage
 
 ## Project structure
 
@@ -24,4 +26,4 @@ Open `index.html` in a browser. No build step and no dependencies.
 
 ## API
 
-`GET https://api.open-meteo.com/v1/forecast` with `latitude`, `longitude`, `current` and `timezone=Asia/Kolkata`. Coordinates for each city are stored in the `CITIES` array in `script.js`. To add a city, add one object to that array.
+`GET https://api.open-meteo.com/v1/forecast` with `latitude`, `longitude`, `current`, `daily` and `timezone=Asia/Kolkata`. Coordinates for each city are stored in the `CITIES` array in `script.js`. To add a city, add one object to that array.

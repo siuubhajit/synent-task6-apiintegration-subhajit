@@ -2,6 +2,7 @@
 
 const API_URL = "https://api.open-meteo.com/v1/forecast";
 const REQUEST_TIMEOUT_MS = 8000;
+const STORAGE_KEY = "bharat-weather:last-city";
 
 const CITIES = [
   { name: "Kolkata", state: "West Bengal", lat: 22.5726, lon: 88.3639 },
@@ -46,6 +47,8 @@ function buildUrl(city) {
     current: "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m",
     timezone: "Asia/Kolkata",
   });
+  params.set("daily", "weather_code,temperature_2m_max,temperature_2m_min");
+  params.set("forecast_days", "5");
   return `${API_URL}?${params}`;
 }
 
@@ -67,6 +70,26 @@ function render(city, data) {
       <li><span>Humidity</span><strong>${now.relative_humidity_2m}%</strong></li>
       <li><span>Wind</span><strong>${Math.round(now.wind_speed_10m)} km/h</strong></li>
     </ul>`;
+  weatherEl.insertAdjacentHTML("beforeend", renderForecast(data.daily));
+}
+
+function renderForecast(daily) {
+  const rows = daily.time
+    .map((date, i) => {
+      const day = new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", { weekday: "short" });
+      const info = describeCode(daily.weather_code[i]);
+      const high = Math.round(daily.temperature_2m_max[i]);
+      const low = Math.round(daily.temperature_2m_min[i]);
+      return `
+        <div class="forecast-row">
+          <span class="day">${i === 0 ? "Today" : day}</span>
+          <span>${info.icon} ${info.label}</span>
+          <span class="range"><b>${high}°</b> / ${low}°</span>
+        </div>`;
+    })
+    .join("");
+
+  return `<div class="forecast"><h3>Next 5 days</h3>${rows}</div>`;
 }
 
 function setLoading(isLoading) {
@@ -118,12 +141,31 @@ async function loadWeather(city) {
   }
 }
 
+function getSavedCity() {
+  try {
+    const saved = Number(localStorage.getItem(STORAGE_KEY));
+    return Number.isInteger(saved) && saved >= 0 && saved < CITIES.length ? saved : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveCity(index) {
+  try {
+    localStorage.setItem(STORAGE_KEY, index);
+  } catch {
+    // Storage can be blocked in private mode; the app still works without it.
+  }
+}
+
 function init() {
   CITIES.forEach((city, index) => {
     citySelect.add(new Option(`${city.name}, ${city.state}`, index));
   });
+  citySelect.value = getSavedCity();
 
   citySelect.addEventListener("change", () => {
+    saveCity(citySelect.value);
     loadWeather(CITIES[citySelect.value]);
   });
   retryBtn.addEventListener("click", () => loadWeather(CITIES[citySelect.value]));

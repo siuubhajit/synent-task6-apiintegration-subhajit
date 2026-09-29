@@ -32,6 +32,7 @@ function describeCode(code) {
 
 const citySelect = document.getElementById("city-select");
 const weatherEl = document.getElementById("weather");
+const loaderEl = document.getElementById("loader");
 
 function buildUrl(city) {
   const params = new URLSearchParams({
@@ -63,10 +64,21 @@ function render(city, data) {
     </ul>`;
 }
 
+function setLoading(isLoading) {
+  loaderEl.hidden = !isLoading;
+  weatherEl.hidden = isLoading;
+  citySelect.disabled = isLoading;
+}
+
 async function loadWeather(city) {
-  const response = await fetch(buildUrl(city));
-  const data = await response.json();
-  render(city, data);
+  setLoading(true);
+  try {
+    const response = await fetch(buildUrl(city));
+    const data = await response.json();
+    render(city, data);
+  } finally {
+    setLoading(false);
+  }
 }
 
 function init() {
